@@ -1,19 +1,34 @@
 <?php
-ob_start(); // Start output buffering
+ob_start();
 
-$host = "sql112.epizy.com";
-$user = "if0_39971671";      
-$pass = "3EE710808";    
-$db   = "if0_39971671_thoughtflow"; 
+$host = "thought-flow-thoughtflow.e.aivencloud.com";
+$port = 27690;
+$user = "avnadmin";
+$pass = "AVNS_sPIYwL5Dljh5gYP7_fp";
+$db = "defaultdb";
 
-$conn = new mysqli($host, $user, $pass, $db);
+// Aiven requires SSL, so we need to set SSL mode
+$conn = mysqli_init();
 
-if ($conn->connect_error) {
-    ob_end_clean(); // Clear any buffered output
+if (!$conn) {
+    die("mysqli_init failed");
+}
+
+// Set SSL options for Aiven (they require SSL)
+$conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
+
+// Connect with SSL
+if (!$conn->real_connect($host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL)) {
+    ob_end_clean();
     header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json");
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Connection failed"]);
+    echo json_encode([
+        "success" => false, 
+        "message" => "Database connection failed: " . mysqli_connect_error()
+    ]);
     exit();
 }
+
+// Connection successful - $conn is ready to use
 ?>
